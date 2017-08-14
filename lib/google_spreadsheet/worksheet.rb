@@ -228,7 +228,8 @@ module GoogleSpreadsheet
               </entry>
             EOS
 
-            @session.request(:put, edit_url, :data => xml)
+            # Fix for new GDocs protocol, see https://github.com/gimite/google-drive-ruby/commit/b9e2c00bb30ee32ad8d5792e63dcb9bacd2465cd
+            @session.request(:put, edit_url, :data => xml, :header => {"Content-Type" => "application/atom+xml", "If-Match" => "*"})
 
             @meta_modified = false
             sent = true
@@ -284,7 +285,7 @@ module GoogleSpreadsheet
               EOS
 
               batch_url = concat_url(@cells_feed_url, "/batch")
-              result = @session.request(:post, batch_url, :data => xml)
+              result = @session.request(:post, batch_url, :data => xml, :header => {"If-Match" => "*"})
               result.css("atom|entry").each() do |entry|
                 interrupted = entry.css("batch|interrupted")[0]
                 if interrupted
